@@ -18,10 +18,22 @@
             required
           />
           <label>Room</label>
-          <input type="text" name="room" placeholder="Room" required />
+          <select name="selectedroom" id="selectedroom"></select>
+          <input name="room" id="room" placeholder="New room" />
           <button>Join</button>
         </form>
       </div>
     </div>
+
+    <script id="room-list-template" type="text/html">
+      <option value="">Not selected</value>
+      {{#rooms}}
+      <option value="{{.}}">{{.}}</value>
+      {{/rooms}}
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/3.0.1/mustache.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/index.js"></script>
   </body>
 </html>

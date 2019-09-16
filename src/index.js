@@ -11,8 +11,10 @@ const {
   addUser,
   removeUser,
   getUser,
-  getUsersInRoom
+  getUsersInRoom,
+  getRoomList
 } = require("./utils/users");
+const { equalArray } = require("./utils/common");
 
 const app = express();
 const server = http.createServer(app);
@@ -23,6 +25,17 @@ app.use(express.static(publicDirectoryPath));
 const port = process.env.PORT;
 
 io.on("connection", socket => {
+  console.log("New connection");
+
+  let prevRoomsList;
+  const emitRoomListIfChanged = () => {
+    const rooms = getRoomList();
+    if (!equalArray(prevRoomsList, rooms)) {
+      io.emit("roomList", rooms);
+      prevRoomsList = rooms;
+    }
+  };
+
   socket.on("join", ({ username, room }, callback) => {
     const { error, user } = addUser({ id: socket.id, username, room });
 
@@ -42,6 +55,7 @@ io.on("connection", socket => {
       room: user.room,
       users: getUsersInRoom(user.room)
     });
+    emitRoomListIfChanged();
     callback();
   });
 
@@ -66,18 +80,24 @@ io.on("connection", socket => {
     callback();
   });
 
+  socket.on("getRoomList", () => {
+    socket.emit("roomList", getRoomList());
+  });
+
   socket.on("disconnect", () => {
     const user = removeUser(socket.id);
-    if (user) {
-      io.to(user.room).emit(
-        "message",
-        generateMessage("Admin", `${user.username} has left`)
-      );
-      io.to(user.room).emit("roomData", {
-        room: user.room,
-        users: getUsersInRoom(user.room)
-      });
+    if (!user) {
+      return;
     }
+    io.to(user.room).emit(
+      "message",
+      generateMessage("Admin", `${user.username} has left`)
+    );
+    io.to(user.room).emit("roomData", {
+      room: user.room,
+      users: getUsersInRoom(user.room)
+    });
+    emitRoomListIfChanged();
   });
 });
 

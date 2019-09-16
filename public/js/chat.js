@@ -16,9 +16,10 @@ const locationMessageTemplate = document.querySelector(
 const sidebarTemplate = document.querySelector("#sidebar-template").innerHTML;
 
 // Options
-const { username, room } = Qs.parse(location.search, {
+const { username, room: newRoom, selectedroom } = Qs.parse(location.search, {
   ignoreQueryPrefix: true
 });
+const room = selectedroom || newRoom;
 
 const autoscroll = () => {
   const $newMessage = $messages.lastElementChild;

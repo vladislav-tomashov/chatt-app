@@ -1,4 +1,5 @@
 const users = [];
+const rooms = new Set();
 
 const addUser = ({ id, username, room }) => {
   const tmpUsername = username.trim().toLowerCase();
@@ -18,13 +19,19 @@ const addUser = ({ id, username, room }) => {
 
   const user = { id, username: tmpUsername, room: tmpRoom };
   users.push(user);
+  rooms.add(tmpRoom);
   return { user };
 };
 
 const removeUser = id => {
   const index = users.findIndex(user => user.id === id);
   if (index !== -1) {
-    return users.splice(index, 1)[0];
+    const { room } = users[index];
+    const result = users.splice(index, 1)[0];
+    if (!users.some(user => user.room === room)) {
+      rooms.delete(room);
+    }
+    return result;
   }
 };
 
@@ -35,9 +42,12 @@ const getUsersInRoom = room => {
   return users.filter(user => user.room === tmpRoom);
 };
 
+const getRoomList = () => Array.from(rooms);
+
 module.exports = {
   addUser,
   removeUser,
   getUser,
-  getUsersInRoom
+  getUsersInRoom,
+  getRoomList
 };
